@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Breathe — a quiet place</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0d1420;
+    --bg-mid:#161f2e;
+    --bg-high:#202b3d;
+    --orb-teal:#6fb8ac;
+    --orb-teal-soft:#4d8f88;
+    --orb-lavender:#b6a3d6;
+    --accent-sand:#e9c98a;
+    --accent-sand-deep:#d9b876;
+    --text-primary:#f3efe7;
+    --text-muted:#9aa7bb;
+    --text-faint:#6c7893;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html,body{
+    height:100%;
+    background:var(--bg-deep);
+    color:var(--text-primary);
+    font-family:'Manrope',sans-serif;
+    overflow-x:hidden;
+  }
+
+  body{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 20%, rgba(111,184,172,0.10), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 80%, rgba(182,163,214,0.08), transparent 60%),
+      linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-mid) 60%, var(--bg-deep) 100%);
+  }
+
+  /* drifting particles */
+  #particles{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+  }
+  .mote{
+    position:absolute;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(243,239,231,0.55), rgba(243,239,231,0) 70%);
+    animation:drift linear infinite;
+    opacity:0;
+  }
+  @keyframes drift{
+    0%{ transform:translateY(0) translateX(0); opacity:0; }
+    8%{ opacity:0.5; }
+    92%{ opacity:0.35; }
+    100%{ transform:translateY(-110vh) translateX(var(--drift-x)); opacity:0; }
+  }
+
+  header{
+    position:relative;
+    z-index:2;
+    padding:2.2rem clamp(1.2rem, 4vw, 3rem) 0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+
+  .wordmark{
+    font-family:'Newsreader', serif;
+    font-weight:400;
+    font-style:italic;
+    font-size:1.25rem;
+    color:var(--text-primary);
+    letter-spacing:0.01em;
+  }
+
+  .wordmark span{ color:var(--orb-teal); font-style:normal; }
+
+  nav a{
+    color:var(--text-muted);
+    text-decoration:none;
+    font-size:0.9rem;
+    font-weight:500;
+  }
+
+  main{
+    position:relative;
+    z-index:2;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:2rem 1.5rem 6rem;
+  }
+
+  .eyebrow{
+    font-size:0.78rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--text-faint);
+    margin-bottom:1.1rem;
+  }
+
+  h1{
+    font-family:'Newsreader', serif;
+    font-weight:400;
+    font-size:clamp(2rem, 5vw, 3.1rem);
+    line-height:1.15;
+    max-width:16ch;
+    color:var(--text-primary);
+    margin-bottom:0.8rem;
+  }
+
+  .lede{
+    color:var(--text-muted);
+    font-size:1rem;
+    max-width:38ch;
+    line-height:1.55;
+    margin-bottom:3rem;
+  }
+
+  /* the orb */
+  .orb-stage{
+    position:relative;
+    width:min(78vw, 320px);
+    height:min(78vw, 320px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:2.6rem;
+  }
+
+  .orb-ring{
+    position:absolute;
+    inset:0;
+    border-radius:50%;
+    border:1px solid rgba(243,239,231,0.10);
+  }
+  .orb-ring.r2{ inset:-22px; border-color:rgba(243,239,231,0.06); }
+
+  .orb{
+    width:46%;
+    height:46%;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 32%, rgba(243,239,231,0.9), var(--orb-teal) 38%, var(--orb-teal-soft) 68%, rgba(77,143,136,0.4) 100%);
+    box-shadow:0 0 60px 10px rgba(111,184,172,0.35), 0 0 120px 40px rgba(182,163,214,0.12);
+    transition:transform 4s ease-in-out, background 4s ease-in-out, box-shadow 4s ease-in-out;
+    transform:scale(0.72);
+  }
+
+  .orb.breathe-in{
+    transform:scale(1.18);
+    background:radial-gradient(circle at 35% 32%, rgba(243,239,231,0.95), var(--orb-lavender) 38%, var(--orb-teal) 72%, rgba(77,143,136,0.5) 100%);
+    box-shadow:0 0 90px 18px rgba(182,163,214,0.4), 0 0 160px 60px rgba(111,184,172,0.15);
+  }
+
+  .orb.hold{ transform:scale(1.18); }
+  .orb.hold-low{ transform:scale(0.72); }
+
+  .breath-word{
+    position:absolute;
+    font-family:'Newsreader', serif;
+    font-style:italic;
+    font-size:1.35rem;
+    color:var(--text-primary);
+    letter-spacing:0.02em;
+    text-shadow:0 2px 20px rgba(13,20,32,0.8);
+  }
+
+  .breath-count{
+    position:absolute;
+    bottom:-2.4rem;
+    font-size:0.85rem;
+    color:var(--text-faint);
+    letter-spacing:0.08em;
+  }
+
+  .controls{
+    display:flex;
+    align-items:center;
+    gap:1rem;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+
+  .btn{
+    font-family:'Manrope', sans-serif;
+    font-weight:600;
+    font-size:0.92rem;
+    padding:0.85rem 1.7rem;
+    border-radius:100px;
+    border:none;
+    cursor:pointer;
+    transition:transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+  }
+  .btn:focus-visible{ outline:2px solid var(--accent-sand); outline-offset:3px; }
+
+  .btn-primary{
+    background:linear-gradient(135deg, var(--orb-teal), var(--orb-teal-soft));
+    color:#0d1420;
+    box-shadow:0 6px 24px rgba(111,184,172,0.25);
+  }
+  .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 8px 28px rgba(111,184,172,0.35); }
+
+  .btn-ghost{
+    background:transparent;
+    border:1px solid rgba(243,239,231,0.18);
+    color:var(--text-muted);
+  }
+  .btn-ghost:hover{ border-color:rgba(243,239,231,0.4); color:var(--text-primary); }
+
+  .pattern-select{
+    display:flex;
+    gap:0.4rem;
+    background:rgba(243,239,231,0.05);
+    border:1px solid rgba(243,239,231,0.08);
+    padding:0.3rem;
+    border-radius:100px;
+    margin-bottom:2.2rem;
+  }
+  .pattern-select button{
+    font-family:'Manrope', sans-serif;
+    font-size:0.78rem;
+    font-weight:600;
+    padding:0.5rem 0.9rem;
+    border-radius:100px;
+    border:none;
+    background:transparent;
+    color:var(--text-faint);
+    cursor:pointer;
+  }
+  .pattern-select button.active{
+    background:rgba(243,239,231,0.1);
+    color:var(--text-primary);
+  }
+
+  .sound-select{
+    display:none;
+    gap:0.4rem;
+    background:rgba(243,239,231,0.05);
+    border:1px solid rgba(243,239,231,0.08);
+    padding:0.3rem;
+    border-radius:100px;
+    margin-top:1.1rem;
+  }
+  .sound-select.visible{ display:flex; }
+  .sound-select button{
+    font-family:'Manrope', sans-serif;
+    font-size:0.75rem;
+    font-weight:600;
+    padding:0.45rem 0.8rem;
+    border-radius:100px;
+    border:none;
+    background:transparent;
+    color:var(--text-faint);
+    cursor:pointer;
+  }
+  .sound-select button.active{
+    background:rgba(243,239,231,0.1);
+    color:var(--text-primary);
+  }
+
+  /* crisis support — always reachable */
+  .support-tab{
+    position:fixed;
+    right:clamp(0.8rem, 3vw, 1.8rem);
+    bottom:clamp(0.8rem, 3vw, 1.8rem);
+    z-index:10;
+  }
+
+  .support-btn{
+    display:flex;
+    align-items:center;
+    gap:0.55rem;
+    background:var(--accent-sand);
+    color:#2a2110;
+    font-weight:700;
+    font-size:0.85rem;
+    padding:0.8rem 1.15rem;
+    border-radius:100px;
+    border:none;
+    cursor:pointer;
+    box-shadow:0 8px 24px rgba(0,0,0,0.35), 0 0 0 4px rgba(233,201,138,0.08);
+  }
+  .support-btn:hover{ background:var(--accent-sand-deep); }
+  .support-btn .dot{
+    width:8px; height:8px; border-radius:50%;
+    background:#2a2110;
+    animation:pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes pulse{ 0%,100%{opacity:0.35;} 50%{opacity:1;} }
+
+  .support-panel{
+    position:absolute;
+    bottom:calc(100% + 0.8rem);
+    right:0;
+    width:min(88vw, 320px);
+    background:var(--bg-high);
+    border:1px solid rgba(243,239,231,0.1);
+    border-radius:18px;
+    padding:1.3rem;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+    opacity:0;
+    transform:translateY(8px) scale(0.98);
+    pointer-events:none;
+    transition:all 0.2s ease;
+  }
+  .support-panel.open{
+    opacity:1;
+    transform:translateY(0) scale(1);
+    pointer-events:auto;
+  }
+  .support-panel h3{
+    font-family:'Newsreader', serif;
+    font-weight:500;
+    font-size:1.1rem;
+    margin-bottom:0.3rem;
+  }
+  .support-panel p{
+    color:var(--text-muted);
+    font-size:0.85rem;
+    line-height:1.5;
+    margin-bottom:1rem;
+  }
+  .support-links{ display:flex; flex-direction:column; gap:0.6rem; }
+  .support-links a{
+    display:flex;
+    flex-direction:column;
+    text-decoration:none;
+    color:var(--text-primary);
+    background:rgba(243,239,231,0.05);
+    border:1px solid rgba(243,239,231,0.08);
+    padding:0.7rem 0.9rem;
+    border-radius:12px;
+    font-size:0.85rem;
+    transition:background 0.15s ease;
+  }
+  .support-links a:hover{ background:rgba(243,239,231,0.1); }
+  .support-links a strong{ font-size:0.92rem; margin-bottom:0.15rem; }
+  .support-links a small{ color:var(--text-faint); }
+
+  footer{
+    position:relative;
+    z-index:2;
+    text-align:center;
+    padding:1.5rem;
+    color:var(--text-faint);
+    font-size:0.78rem;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .orb, .mote{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="particles"></div>
+
+<header>
+  <div class="wordmark">quiet<span>.</span>space</div>
+  <nav><a href="#" id="aboutLink">why this exists</a></nav>
+</header>
+
+<main>
+  <p class="eyebrow">a moment, before anything else</p>
+  <h1>Let's just breathe for a bit.</h1>
+  <p class="lede">No pressure, no timer running out on you. Follow the shape below for a few rounds — it's okay if your mind wanders.</p>
+
+  <div class="pattern-select" role="group" aria-label="Choose a breathing pattern">
+    <button class="active" data-pattern="box">Box · 4-4-4-4</button>
+    <button data-pattern="478">4-7-8</button>
+    <button data-pattern="calm">Long exhale</button>
+  </div>
+
+  <div class="orb-stage">
+    <div class="orb-ring"></div>
+    <div class="orb-ring r2"></div>
+    <div class="orb" id="orb"></div>
+    <div class="breath-word" id="breathWord">ready?</div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-primary" id="startBtn">Begin breathing</button>
+    <button class="btn btn-ghost" id="stopBtn" style="display:none;">Pause</button>
+  </div>
+
+  <audio id="ambientTrack" src="audio/ambient-track.mp3" loop preload="auto"></audio>
+</main>
+
+<footer>Made for anyone who needs a small, safe pause. You're allowed to take one.</footer>
+
+<div class="support-tab">
+  <div class="support-panel" id="supportPanel">
+    <h3>Need to talk to someone now?</h3>
+    <p>These are free, confidential, and available right now — no need to wait it out alone.</p>
+    <div class="support-links">
+      <a href="tel:988"><strong>Call or text 988</strong><small>Suicide & Crisis Lifeline — 24/7, US</small></a>
+      <a href="sms:741741?&body=HOME"><strong>Text HOME to 741741</strong><small>Crisis Text Line — 24/7, US</small></a>
+      <a href="https://988lifeline.org/chat" target="_blank" rel="noopener"><strong>Chat online</strong><small>988lifeline.org/chat</small></a>
+    </div>
+  </div>
+  <button class="support-btn" id="supportBtn"><span class="dot"></span> Need support now?</button>
+</div>
+
+<script>
+  // ambient drifting particles
+  const particleField = document.getElementById('particles');
+  const MOTES = 26;
+  for(let i=0;i<MOTES;i++){
+    const m = document.createElement('div');
+    m.className = 'mote';
+    const size = 2 + Math.random()*4;
+    m.style.width = size+'px';
+    m.style.height = size+'px';
+    m.style.left = Math.random()*100+'vw';
+    m.style.top = 100+Math.random()*20+'vh';
+    m.style.setProperty('--drift-x', (Math.random()*80-40)+'px');
+    m.style.animationDuration = (14 + Math.random()*16)+'s';
+    m.style.animationDelay = (Math.random()*18)+'s';
+    particleField.appendChild(m);
+  }
+
+  // breathing patterns: [label, seconds] phases
+  const PATTERNS = {
+    box:  [['breathe in', 4, 'in'], ['hold', 4, 'hold'], ['breathe out', 4, 'out'], ['hold', 4, 'hold-low']],
+    478:  [['breathe in', 4, 'in'], ['hold', 7, 'hold'], ['breathe out', 8, 'out']],
+    calm: [['breathe in', 4, 'in'], ['breathe out', 6, 'out']]
+  };
+
+  const orb = document.getElementById('orb');
+  const word = document.getElementById('breathWord');
+  const countEl = document.getElementById('breathCount');
+  const startBtn = document.getElementById('startBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const patternBtns = document.querySelectorAll('.pattern-select button');
+
+  let currentPattern = 'box';
+  let running = false;
+  let phaseIndex = 0;
+  let timer = null;
+  let countdownTimer = null;
+
+  patternBtns.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(running) stopBreathing();
+      patternBtns.forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      currentPattern = btn.dataset.pattern;
+    });
+  });
+
+  function setOrbState(state){
+    orb.classList.remove('breathe-in','hold','hold-low');
+    if(state==='in') orb.classList.add('breathe-in');
+    else if(state==='hold') orb.classList.add('breathe-in','hold');
+    else if(state==='hold-low') orb.classList.add('hold-low');
+    // 'out' falls back to base scale via transition
+  }
+
+  function runPhase(){
+    if(!running) return;
+    const phases = PATTERNS[currentPattern];
+    const [label, seconds, state] = phases[phaseIndex];
+    word.textContent = label;
+    setOrbState(state);
+    orb.style.transitionDuration = seconds + 's';
+
+    let remaining = seconds;
+    countEl.textContent = remaining;
+    clearInterval(countdownTimer);
+    countdownTimer = setInterval(()=>{
+      remaining -= 1;
+      if(remaining > 0) countEl.textContent = remaining;
+    }, 1000);
+
+    timer = setTimeout(()=>{
+      phaseIndex = (phaseIndex + 1) % phases.length;
+      runPhase();
+    }, seconds * 1000);
+  }
+
+  function startBreathing(){
+    running = true;
+    phaseIndex = 0;
+    startBtn.style.display = 'none';
+    stopBtn.style.display = 'inline-block';
+    orb.style.transitionDuration = '3s';
+    runPhase();
+  }
+
+  function stopBreathing(){
+    running = false;
+    clearTimeout(timer);
+    clearInterval(countdownTimer);
+    word.textContent = 'ready?';
+    countEl.textContent = '';
+    orb.style.transitionDuration = '4s';
+    orb.classList.remove('breathe-in','hold','hold-low');
+    startBtn.style.display = 'inline-block';
+    stopBtn.style.display = 'none';
+  }
+
+  startBtn.addEventListener('click', startBreathing);
+  stopBtn.addEventListener('click', stopBreathing);
+
+  // ---- ambient sound engine (Web Audio + uploaded track) ----
+  let audioCtx = null;
+  let currentSound = 'track';
+  let soundNodes = [];
+  let audioStarted = false;
+  const ambientTrack = document.getElementById('ambientTrack');
+
+
+  function ensureAudio(){
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function stopSound(){
+    soundNodes.forEach(n=>{
+      try{ n.stop ? n.stop() : null; }catch(e){}
+      try{ n.disconnect(); }catch(e){}
+    });
+    soundNodes = [];
+    ambientTrack.pause();
+    ambientTrack.currentTime = 0;
+  }
+
+  function playTrack(){
+    ambientTrack.volume = 0.4;
+    ambientTrack.currentTime = 0;
+    ambientTrack.play().catch(()=>{});
+  }
+
+  function startSound(){
+    stopSound();
+    playTrack();
+    audioStarted = true;
+  }
+
+  // Browsers block audio until a user gesture, so kick it off on the
+  // first interaction anywhere on the page rather than requiring a
+  // dedicated button.
+  function kickOffAudioOnce(){
+    if(!audioStarted) startSound();
+    document.removeEventListener('click', kickOffAudioOnce);
+    document.removeEventListener('keydown', kickOffAudioOnce);
+  }
+  document.addEventListener('click', kickOffAudioOnce);
+  document.addEventListener('keydown', kickOffAudioOnce);
+
+  // support panel
+  const supportBtn = document.getElementById('supportBtn');
+  const supportPanel = document.getElementById('supportPanel');
+  supportBtn.addEventListener('click', ()=>{
+    supportPanel.classList.toggle('open');
+  });
+  document.addEventListener('click', (e)=>{
+    if(!e.target.closest('.support-tab')){
+      supportPanel.classList.remove('open');
+    }
+  });
+
+  document.getElementById('aboutLink').addEventListener('click', (e)=>{
+    e.preventDefault();
+    alert('This is a small pause button for a hard moment — a guided breath, and a fast way to reach real support if you need it. Nothing here is a substitute for professional care, but it can be a first, safe step.');
+  });
+</script>
+
+</body>
+</html>
